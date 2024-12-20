@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Search</title>
+    <style>
+        body {
+            font-family:Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        
+
+        #search-button {
+            padding: 10px;
+            
+        }
+
+        #user-card {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: white;
+            display: none;
+        }
+
+        
+
+        .user-item {
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .user-item:hover {
+            background-color: #eaeaea;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Search</h1>
+    <input type="text" id="search-input" placeholder="Search by name..." />
+    <button id="search-button">Search</button>
+    
+    <div id="users-list"></div>
+    <div id="user-card"></div>
+    
+    <script>
+        const API_URL = 'https://randomuser.me/api/?results=10';
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const usersList = document.getElementById('users-list');
+        const userCard = document.getElementById('user-card');
+
+        
+        function fetchUsers() {
+            if (!localStorage.getItem('users')) {
+                fetch('https://randomuser.me/api/?results=10')
+                    .then(response => response.json())
+                    .then(data => {
+                        localStorage.setItem('users', JSON.stringify(data.results));
+                        renderUsers(data.results);
+                    })
+                    .catch(error => console.log('Error fetching data:', error));
+            } else {
+                const users = JSON.parse(localStorage.getItem('users'));
+                renderUsers(users);
+            }
+        }
+function renderUsers(users){
+        users.forEach(user => {
+        
+        const userItem = document.createElement('div');
+        userItem.className = 'user-item';
+
+        
+        const userName = document.createElement('div');
+        userName.className = 'user-name';
+        userName.textContent = user.name.first + ' ' + user.name.last;
+        userItem.appendChild(userName);
+
+        const userEmail = document.createElement('div');
+        userEmail.className = 'user-email';
+        userEmail.textContent = user.email;
+        userItem.appendChild(userEmail);
+
+        
+        userItem.addEventListener('click', () => displayUserCard(user));
+
+        usersList.appendChild(userItem);
+    });}
+
+
+function displayUserCard(user) {
+            userCard.style.display = 'block';
+            userCard.innerHTML = `
+                <h2>${user.name.first} ${user.name.last}</h2>
+                <img src="${user.picture.large}" alt="${user.name.first}'s picture" />
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Gender:</strong> ${user.gender}</p>
+                <p><strong>Location:</strong> ${user.location.city}, ${user.location.country}</p>
+           ` ;}
+
+        
+        function searchUser() {
+            const query = searchInput.value.toLowerCase();
+            const users = JSON.parse(localStorage.getItem('users'));
+            const filteredUsers = users.filter(user => {
+                return user.name.first.toLowerCase().includes(query) || user.name.last.toLowerCase().includes(query);
+            });
+            renderUsers(filteredUsers);
+        }
+
+        
+        searchButton.addEventListener('click', searchUser);
+        searchInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                searchUser();
+            }
+        });
+
+        
+        fetchUsers();
+    </script>
+</body>
+</html>
